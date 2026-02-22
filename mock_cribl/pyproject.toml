@@ -1,0 +1,9 @@
+[project]
+name = "mock-cribl"
+version = "0.1.0"
+description = "Mock Cribl Stream HTTP Source for Zapper development"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

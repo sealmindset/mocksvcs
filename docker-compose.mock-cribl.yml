@@ -1,0 +1,19 @@
+services:
+  mock-cribl:
+    build:
+      context: ./mock_cribl
+    ports:
+      - "3005:10080"
+    environment:
+      - MOCK_CRIBL_AUTH_TOKEN=${CRIBL_AUTH_TOKEN:-mock-cribl-dev-token}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - mock-cribl
+
+networks:
+  mock-cribl:
+    driver: bridge

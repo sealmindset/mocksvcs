@@ -1,0 +1,19 @@
+services:
+  mock-github:
+    build:
+      context: ./mock_github
+    ports:
+      - "3006:8090"
+    environment:
+      - MOCK_GITHUB_LOG_LEVEL=debug
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/rate_limit"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - mock-github
+
+networks:
+  mock-github:
+    driver: bridge
