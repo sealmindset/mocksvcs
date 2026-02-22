@@ -1,0 +1,552 @@
+openapi: 3.0.3
+info:
+  title: Products API
+  description: |
+    Mock API for hackathon project - E-Commerce Products
+    
+    This is a LOCAL MOCK SERVER for development and learning purposes.
+    See security comments throughout for production considerations.
+  version: 1.0.0
+  contact:
+    name: Hackathon Support
+
+servers:
+  - url: http://localhost:3000
+    description: Local mock server
+
+# ============================================================
+# SECURITY NOTE: Authentication & Authorization
+# ============================================================
+# In production, you would uncomment and configure:
+#
+# security:
+#   - bearerAuth: []
+#   - apiKeyAuth: []
+#
+# This would require all endpoints to have valid authentication.
+# Individual endpoints can override with their own security requirements.
+# ============================================================
+
+tags:
+  - name: Products
+    description: Product management operations
+
+paths:
+  /products:
+    get:
+      summary: List all products
+      description: Retrieve a list of all products in the catalog
+      operationId: listProducts
+      tags:
+        - Products
+      # SECURITY NOTE: In production, add rate limiting headers
+      # x-ratelimit-limit: 100
+      # x-ratelimit-remaining: 99
+      parameters:
+        - name: category
+          in: query
+          description: Filter by category
+          required: false
+          schema:
+            type: string
+        - name: inStock
+          in: query
+          description: Filter by availability
+          required: false
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          description: Maximum number of results
+          required: false
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+      responses:
+        '200':
+          description: Successful response with list of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+              example:
+                - id: 1
+                  name: "MacBook Pro 16-inch"
+                  description: "Apple M3 Pro chip, 18GB RAM, 512GB SSD"
+                  price: 2499.99
+                  category: "Electronics"
+                  inStock: true
+                  quantity: 25
+                  sku: "APPLE-MBP16-M3"
+                  createdAt: "2024-01-15T10:30:00Z"
+                - id: 2
+                  name: "Sony WH-1000XM5"
+                  description: "Wireless noise-canceling headphones"
+                  price: 349.99
+                  category: "Electronics"
+                  inStock: true
+                  quantity: 150
+                  sku: "SONY-WH1000XM5"
+                  createdAt: "2024-01-10T08:00:00Z"
+                - id: 3
+                  name: "Herman Miller Aeron Chair"
+                  description: "Ergonomic office chair, Size B"
+                  price: 1395.00
+                  category: "Furniture"
+                  inStock: true
+                  quantity: 12
+                  sku: "HM-AERON-B"
+                  createdAt: "2024-02-01T14:20:00Z"
+                - id: 4
+                  name: "Kindle Paperwhite"
+                  description: "6.8-inch display, 16GB, with ads"
+                  price: 139.99
+                  category: "Electronics"
+                  inStock: false
+                  quantity: 0
+                  sku: "AMZN-KPW-16"
+                  createdAt: "2024-01-20T09:15:00Z"
+                - id: 5
+                  name: "Yeti Rambler 30oz"
+                  description: "Stainless steel tumbler with MagSlider lid"
+                  price: 38.00
+                  category: "Kitchen"
+                  inStock: true
+                  quantity: 500
+                  sku: "YETI-RAM30"
+                  createdAt: "2024-02-05T11:45:00Z"
+        '400':
+          description: Bad request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Create a new product
+      description: Add a new product to the catalog
+      operationId: createProduct
+      tags:
+        - Products
+      # SECURITY NOTE: In production, this would require authentication
+      # security:
+      #   - bearerAuth: []
+      # And authorization check for 'products:write' permission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+            example:
+              name: "New Product"
+              description: "Product description here"
+              price: 99.99
+              category: "Electronics"
+              inStock: true
+              quantity: 50
+              sku: "NEW-PROD-001"
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              example:
+                id: 6
+                name: "New Product"
+                description: "Product description here"
+                price: 99.99
+                category: "Electronics"
+                inStock: true
+                quantity: 50
+                sku: "NEW-PROD-001"
+                createdAt: "2024-03-01T12:00:00Z"
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Validation failed"
+                details:
+                  - field: "price"
+                    message: "Price must be a positive number"
+        # SECURITY NOTE: In production, add 401 and 403 responses
+        # '401':
+        #   description: Unauthorized - Missing or invalid authentication
+        # '403':
+        #   description: Forbidden - Insufficient permissions
+
+  /products/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique product identifier
+        schema:
+          type: integer
+          minimum: 1
+    
+    get:
+      summary: Get a product by ID
+      description: Retrieve detailed information about a specific product
+      operationId: getProduct
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successful response with product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              example:
+                id: 1
+                name: "MacBook Pro 16-inch"
+                description: "Apple M3 Pro chip, 18GB RAM, 512GB SSD"
+                price: 2499.99
+                category: "Electronics"
+                inStock: true
+                quantity: 25
+                sku: "APPLE-MBP16-M3"
+                createdAt: "2024-01-15T10:30:00Z"
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Product not found"
+                details: "No product exists with ID: 999"
+    
+    put:
+      summary: Update a product
+      description: Update an existing product's information
+      operationId: updateProduct
+      tags:
+        - Products
+      # SECURITY NOTE: In production, require authentication and authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      summary: Delete a product
+      description: Remove a product from the catalog
+      operationId: deleteProduct
+      tags:
+        - Products
+      # SECURITY NOTE: In production, require authentication and 'products:delete' permission
+      responses:
+        '204':
+          description: Product deleted successfully (no content)
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /products/search:
+    get:
+      summary: Search products
+      description: Search products by name or description
+      operationId: searchProducts
+      tags:
+        - Products
+      parameters:
+        - name: q
+          in: query
+          description: Search query string
+          required: true
+          schema:
+            type: string
+            minLength: 2
+        - name: limit
+          in: query
+          description: Maximum results to return
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  query:
+                    type: string
+                  count:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+              example:
+                query: "laptop"
+                count: 1
+                results:
+                  - id: 1
+                    name: "MacBook Pro 16-inch"
+                    description: "Apple M3 Pro chip, 18GB RAM, 512GB SSD"
+                    price: 2499.99
+                    category: "Electronics"
+                    inStock: true
+                    quantity: 25
+                    sku: "APPLE-MBP16-M3"
+                    createdAt: "2024-01-15T10:30:00Z"
+
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - price
+        - category
+        - inStock
+      properties:
+        id:
+          type: integer
+          description: Unique product identifier (auto-generated)
+          example: 1
+          readOnly: true
+        name:
+          type: string
+          description: Product display name
+          example: "MacBook Pro 16-inch"
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: Detailed product description
+          example: "Apple M3 Pro chip, 18GB RAM, 512GB SSD"
+          maxLength: 2000
+        price:
+          type: number
+          format: float
+          description: Price in USD
+          example: 2499.99
+          minimum: 0
+        category:
+          type: string
+          description: Product category
+          example: "Electronics"
+          enum:
+            - Electronics
+            - Furniture
+            - Kitchen
+            - Clothing
+            - Books
+            - Sports
+            - Other
+        inStock:
+          type: boolean
+          description: Whether item is currently available
+          example: true
+        quantity:
+          type: integer
+          description: Number of items in inventory
+          example: 25
+          minimum: 0
+        sku:
+          type: string
+          description: Stock Keeping Unit identifier
+          example: "APPLE-MBP16-M3"
+          pattern: "^[A-Z0-9-]+$"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when product was created
+          example: "2024-01-15T10:30:00Z"
+          readOnly: true
+
+    ProductInput:
+      type: object
+      required:
+        - name
+        - price
+        - category
+        - inStock
+      properties:
+        name:
+          type: string
+          description: Product display name
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: Detailed product description
+          maxLength: 2000
+        price:
+          type: number
+          format: float
+          description: Price in USD
+          minimum: 0
+        category:
+          type: string
+          description: Product category
+          enum:
+            - Electronics
+            - Furniture
+            - Kitchen
+            - Clothing
+            - Books
+            - Sports
+            - Other
+        inStock:
+          type: boolean
+          description: Whether item is currently available
+        quantity:
+          type: integer
+          description: Number of items in inventory
+          minimum: 0
+        sku:
+          type: string
+          description: Stock Keeping Unit identifier
+          pattern: "^[A-Z0-9-]+$"
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          description: HTTP status code
+          example: 400
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Validation failed"
+        details:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+
+  # ============================================================
+  # SECURITY SCHEMES (For Production Use)
+  # ============================================================
+  # Uncomment these for production implementation:
+  #
+  # securitySchemes:
+  #   bearerAuth:
+  #     type: http
+  #     scheme: bearer
+  #     bearerFormat: JWT
+  #     description: |
+  #       JWT-based authentication.
+  #       
+  #       To authenticate:
+  #       1. Obtain a token from /auth/login
+  #       2. Include in header: Authorization: Bearer <token>
+  #       
+  #       Token contains:
+  #       - User ID
+  #       - Roles/permissions
+  #       - Expiration time
+  #
+  #   apiKeyAuth:
+  #     type: apiKey
+  #     in: header
+  #     name: X-API-Key
+  #     description: |
+  #       API key authentication for server-to-server communication.
+  #       
+  #       To authenticate:
+  #       1. Generate an API key from the admin dashboard
+  #       2. Include in header: X-API-Key: <your-key>
+  #
+  #   oauth2:
+  #     type: oauth2
+  #     flows:
+  #       authorizationCode:
+  #         authorizationUrl: https://auth.example.com/authorize
+  #         tokenUrl: https://auth.example.com/token
+  #         scopes:
+  #           products:read: Read product information
+  #           products:write: Create and update products
+  #           products:delete: Delete products
+  # ============================================================
+
+# ============================================================
+# ADDITIONAL PRODUCTION SECURITY CONSIDERATIONS
+# ============================================================
+#
+# 1. HTTPS/TLS
+#    - All production traffic should use HTTPS
+#    - Obtain SSL certificate from Let's Encrypt or similar
+#    - Configure HSTS headers
+#
+# 2. CORS (Cross-Origin Resource Sharing)
+#    - Configure allowed origins explicitly
+#    - Don't use wildcard (*) in production
+#    - Example headers:
+#      Access-Control-Allow-Origin: https://yourdomain.com
+#      Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+#      Access-Control-Allow-Headers: Authorization, Content-Type
+#
+# 3. Rate Limiting
+#    - Implement per-IP and per-user rate limits
+#    - Return 429 Too Many Requests when exceeded
+#    - Include rate limit headers in responses
+#
+# 4. Input Validation
+#    - Validate all input against schema
+#    - Sanitize strings to prevent XSS
+#    - Use parameterized queries to prevent SQL injection
+#
+# 5. Logging & Monitoring
+#    - Log all requests with timestamps
+#    - Monitor for suspicious patterns
+#    - Set up alerts for errors and anomalies
+#
+# 6. Error Handling
+#    - Never expose stack traces in production
+#    - Use generic error messages for security errors
+#    - Log detailed errors server-side only
+#
+# ============================================================

@@ -1,0 +1,23 @@
+{
+  "name": "products-mock-api-persistent",
+  "version": "1.0.0",
+  "description": "Mock API server with PERSISTENT data - Hackathon Example",
+  "scripts": {
+    "start": "node server.js",
+    "reset": "cp db.original.json db.json && echo 'Database reset to original state'"
+  },
+  "keywords": [
+    "mock",
+    "api",
+    "hackathon",
+    "persistent",
+    "crud"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  }
+}

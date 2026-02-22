@@ -1,0 +1,59 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "MacBook Pro 16-inch",
+      "description": "Apple M3 Pro chip, 18GB RAM, 512GB SSD",
+      "price": 2499.99,
+      "category": "Electronics",
+      "inStock": true,
+      "quantity": 25,
+      "sku": "APPLE-MBP16-M3",
+      "createdAt": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Sony WH-1000XM5",
+      "description": "Wireless noise-canceling headphones",
+      "price": 349.99,
+      "category": "Electronics",
+      "inStock": true,
+      "quantity": 150,
+      "sku": "SONY-WH1000XM5",
+      "createdAt": "2024-01-10T08:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Herman Miller Aeron Chair",
+      "description": "Ergonomic office chair, Size B",
+      "price": 1395.00,
+      "category": "Furniture",
+      "inStock": true,
+      "quantity": 12,
+      "sku": "HM-AERON-B",
+      "createdAt": "2024-02-01T14:20:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Kindle Paperwhite",
+      "description": "6.8-inch display, 16GB, with ads",
+      "price": 139.99,
+      "category": "Electronics",
+      "inStock": false,
+      "quantity": 0,
+      "sku": "AMZN-KPW-16",
+      "createdAt": "2024-01-20T09:15:00Z"
+    },
+    {
+      "id": 5,
+      "name": "Yeti Rambler 30oz",
+      "description": "Stainless steel tumbler with MagSlider lid",
+      "price": 38.00,
+      "category": "Kitchen",
+      "inStock": true,
+      "quantity": 500,
+      "sku": "YETI-RAM30",
+      "createdAt": "2024-02-05T11:45:00Z"
+    }
+  ]
+}

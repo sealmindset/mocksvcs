@@ -1,0 +1,28 @@
+{
+  "name": "products-mock-api",
+  "version": "1.0.0",
+  "description": "Mock API server for Products - Hackathon Example",
+  "scripts": {
+    "start": "node server.js",
+    "start:prism-only": "npx @stoplight/prism-cli mock openapi.yaml -h 127.0.0.1 -p 3001",
+    "start:dynamic": "npx @stoplight/prism-cli mock openapi.yaml -h 127.0.0.1 -p 3001 --dynamic",
+    "validate": "npx @stoplight/prism-cli validate openapi.yaml"
+  },
+  "keywords": [
+    "mock",
+    "api",
+    "hackathon",
+    "openapi"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@stoplight/prism-cli": "^5.5.2"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "http-proxy-middleware": "^3.0.5",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  }
+}
