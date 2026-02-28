@@ -104,8 +104,10 @@ Phase 5:  DOCKER & LOCAL DEVELOPMENT ──────────────�
 Phase 6:  FRONTEND FOUNDATION ─────────────────────────────── Week 4-6
           Next.js setup, components, auth integration
 
-Phase 7:  DOMAIN FEATURES ────────────────────────────────── Week 5-8
+Phase 7:  DOMAIN FEATURES, AI & SCANNER ARCHITECTURE ───── Week 5-8
           {DOMAIN_SERVICES}, {DOMAIN_ROUTERS}, business logic
+          └── AI Reference: AI_ARCHITECTURE_PLAN.md
+          └── Scanner Reference: SCANNER_TOOL_IMPLEMENTATION_PLAN.md
 
 Phase 8:  TESTING ─────────────────────────────────────────── Ongoing
           Unit, integration, E2E, contract tests
@@ -185,6 +187,8 @@ These plans fill gaps not covered by existing plans:
 | **Testing Strategy** | `TESTING_STRATEGY_PLAN.md` | Phase 8 |
 | **Monitoring & Observability** | `MONITORING_OBSERVABILITY_PLAN.md` | Phase 12 |
 | **Security Hardening** | `SECURITY_HARDENING_PLAN.md` | Phase 9 |
+| **AI Architecture** | `AI_ARCHITECTURE_PLAN.md` | Phase 7 |
+| **Scanner Tool Architecture** | `SCANNER_TOOL_IMPLEMENTATION_PLAN.md` | Phase 7 |
 
 ---
 
@@ -322,8 +326,8 @@ These plans fill gaps not covered by existing plans:
 
 ---
 
-### Phase 7: Domain Features
-**Plan:** Project-specific (not templated — this is where your domain logic lives)
+### Phase 7: Domain Features, AI & Scanner Architecture
+**Plans:** Project-specific domain logic + `AI_ARCHITECTURE_PLAN.md` + `SCANNER_TOOL_IMPLEMENTATION_PLAN.md`
 **Duration:** Variable (2-8 weeks depending on complexity)
 **Prerequisites:** Phase 3, Phase 4, Phase 6
 
@@ -345,7 +349,78 @@ This phase implements your application's core business logic. In AuditGH, this i
 6. Write tests (unit + integration)
 7. Update OpenAPI spec if needed
 
-**Validation:** Each feature has API tests passing and UI renders correctly
+#### AI Architecture (if applicable)
+
+For applications with AI/LLM-powered features, follow `AI_ARCHITECTURE_PLAN.md` which covers:
+
+| AI Component | Plan Section | Key Deliverables |
+|-------------|-------------|-----------------|
+| Provider Abstraction | §2 | Multi-provider layer (Claude, OpenAI, Gemini, Ollama, Docker AI, Azure Foundry) |
+| Agent Frameworks | §3-5 | Claude Agent SDK (primary), LangGraph (alt), Raw API (fallback) |
+| Sub-Agent Orchestration | §6 | Supervisor, Pipeline, Swarm, and Hybrid patterns |
+| MCP Server | §7 | Expose app data/actions as tools via Model Context Protocol |
+| MCP Client | §8 | Consume external MCP servers (GitHub, filesystem, databases) |
+| Skills Registry | §9 | Composable, versioned AI skills (triage, remediation, investigation) |
+| Tool Definitions | §10 | Database search tools, external API tools, function calling |
+| Prompt Engineering | §11 | Role-based prompts, structured output, context window management |
+| Analysis Pipeline | §12 | ReasoningEngine (plan → execute → synthesize with tool use) |
+| Conversations | §13 | Multi-turn persistence, citation tracking |
+| Cost & Budget | §14 | Per-provider tracking, user/org daily limits, budget alerts |
+| Failover & Resilience | §15 | Circuit breaker, retry, graceful degradation (5 levels) |
+| Security Guardrails | §16 | Prompt injection detection, output validation, PII redaction |
+| AI Monitoring | §17 | Token/cost metrics, provider health, OpenTelemetry tracing |
+| AI Database Models | §18 | AIConversation, AIMessage, AICitation, ComponentAnalysis, ProviderUsage |
+| AI API Endpoints | §19 | `/ai/triage`, `/ai/remediate`, `/ai/zero-day`, `/ai/skills/*` |
+
+**AI-specific deliverables:**
+- [ ] Provider abstraction with at least 2 providers configured
+- [ ] Failover chain (cloud provider → local fallback)
+- [ ] MCP server exposing domain tools
+- [ ] Skills registry with built-in skills
+- [ ] ReasoningEngine for tool-use analysis loops
+- [ ] AI database models and migrations
+- [ ] AI API endpoints with RBAC and rate limiting
+- [ ] Cost tracking with budget limits
+- [ ] Prompt injection detection enabled
+- [ ] AI audit logging to database
+
+#### Scanner Tool Architecture (if applicable)
+
+For applications with scanner/tool integration, follow `SCANNER_TOOL_IMPLEMENTATION_PLAN.md` which covers:
+
+| Scanner Component | Plan Section | Key Deliverables |
+|-------------------|-------------|-----------------|
+| Plugin Architecture | §2 | BaseScanner abstract class, ScannerRegistry, categories, execution modes |
+| Execution Models | §3 | SubprocessRunner (safe timeout), ContainerRunner (Docker isolation), RemoteRunner (SaaS API) |
+| SARIF Normalization | §4 | SARIF v2.1.0 import/export, scanner-specific parsers, severity mapping |
+| Repository Management | §5 | Shallow clone, token auth, per-scan isolation, cleanup |
+| Technology Detection | §6 | Language/framework/IaC/package manager detection from file analysis |
+| Scanner Implementations | §7 | Semgrep, Gitleaks, Trivy, Bandit, Checkov, Grype, TruffleHog + custom |
+| Scan Orchestration | §8 | Clone → detect → select → execute → deduplicate → ingest pipeline |
+| Progress Monitoring | §9 | CPU tracking, output line counting, idle detection, scanner keywords |
+| Result Ingestion | §10 | Fingerprint-based upsert, auto-resolution, severity aggregation |
+| Scan Scheduling | §11 | APScheduler with cron triggers, time windows, failure tracking |
+| Scanner Configuration | §12 | Per-org overrides, enable/disable, custom rules |
+| Docker Container | §13 | Multi-stage multi-arch build with 30+ tools, isolated Python venvs |
+| Remote/SaaS Integration | §14 | Snyk, SonarCloud, GitHub Advanced Security, webhook receivers |
+| Database Models | §15 | ScanRun, Finding, ScanSchedule, ScannerConfigDB + Alembic migration |
+| API Endpoints | §16 | Scans CRUD, Findings filter/export, Scanner registry, Schedule CRUD, Webhooks |
+
+**Scanner-specific deliverables:**
+- [ ] BaseScanner plugin architecture with ScannerRegistry
+- [ ] At least 3 scanner implementations (subprocess + container modes)
+- [ ] SARIF import/export for interoperability
+- [ ] Technology detection for automatic scanner selection
+- [ ] Scan orchestration pipeline (clone → detect → execute → ingest)
+- [ ] Fingerprint-based finding deduplication
+- [ ] Scanner Docker container built and verified
+- [ ] Result ingestion with auto-resolution of disappeared findings
+- [ ] Scan scheduling with cron triggers
+- [ ] API endpoints for scan management and findings
+- [ ] Remote scanner integration (at least 1 SaaS provider)
+- [ ] Progress monitoring for long-running scans
+
+**Validation:** Each feature has API tests passing and UI renders correctly; AI analysis completes end-to-end with tool use; Scanner pipeline executes against a test repo and ingests findings
 
 ---
 
@@ -574,7 +649,8 @@ Check which features your application needs:
 | Break glass access | No | No | Required |
 | JWT tokens | No | Optional | Required |
 | Invitation system | No | Required | Required |
-| AI/LLM integration | No | Optional | Optional |
+| AI/LLM integration | No | Optional | Optional | → `AI_ARCHITECTURE_PLAN.md` |
+| Scanner/tool pipeline | No | Optional | Optional | → `SCANNER_TOOL_IMPLEMENTATION_PLAN.md` |
 | Scheduled jobs | No | Optional | Required |
 | PDF/DOCX reports | No | Optional | Required |
 
@@ -633,16 +709,16 @@ Check which features your application needs:
 | **Auth Methods** | 5 | OIDC, API Key, Break Glass, Device Flow, Session |
 | **RBAC Roles** | 5 | super_admin, admin, analyst, manager, user |
 | **Terraform Modules** | 10 | VPC, ALB, ECR, ECS, RDS, ElastiCache, IAM, S3, SG |
-| **Scanner Tools** | 20+ | Gitleaks, Trivy, Semgrep, Grype, Bandit, Checkov, CodeQL |
-| **AI Providers** | 4 | Claude (Anthropic), GPT-4 (OpenAI), Gemini (Google), Ollama (local) |
+| **Scanner Tools** | 30+ | Gitleaks, Trivy, Semgrep, Grype, Bandit, Checkov, CodeQL, TruffleHog, Whispers, Terrascan, gosec → `SCANNER_TOOL_IMPLEMENTATION_PLAN.md` |
+| **AI Providers** | 6 | Claude (Anthropic), GPT-4/5 (OpenAI), Gemini (Google), Ollama (local), Docker AI, Azure AI Foundry |
 | **Test Files** | 7 | RBAC, tenant isolation, device flow, data integrity, ingestion |
 
 ### AuditGH-Specific Features (Not in Templates)
 
 These features are domain-specific to AuditGH and would need custom implementation for your domain:
 
-1. **Security Scanner Integration** — 20+ tool integrations with result normalization
-2. **AI Analysis Engine** — Multi-provider LLM with failover, RAG, chat
+1. **Security Scanner Integration** — 20+ tool integrations with result normalization → See `SCANNER_TOOL_IMPLEMENTATION_PLAN.md` for templated patterns
+2. **AI Analysis Engine** — Multi-provider LLM with failover, RAG, chat → See `AI_ARCHITECTURE_PLAN.md` for templated patterns
 3. **Finding Lifecycle** — Discovery → Triage → Investigation → Remediation → Closure
 4. **Repository Cloning & Analysis** — Git clone, tech detection, architecture analysis
 5. **Scan Scheduling** — AI-optimized scheduling with manual overrides
@@ -679,6 +755,8 @@ For a minimal viable deployment, execute these phases in order:
 5. DOCKER_CONTAINERIZATION_PLAN.md    → Local stack
 6. FRONTEND_IMPLEMENTATION_PLAN.md    → UI foundation
 7. [Your domain features]             → Business logic
+   AI_ARCHITECTURE_PLAN.md            → AI agents, MCP, skills (if applicable)
+   SCANNER_TOOL_IMPLEMENTATION_PLAN.md → Scanner plugins, SARIF, orchestration (if applicable)
 8. TESTING_STRATEGY_PLAN.md           → Test coverage
 9. SECURITY_HARDENING_PLAN.md         → Security review
 10. CICD_PIPELINE_PLAN.md             → Deployment automation
