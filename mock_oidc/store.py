@@ -43,6 +43,7 @@ class OIDCStore:
             "client_id": settings.default_client_id,
             "client_secret": settings.default_client_secret,
             "redirect_uris": [
+                "http://localhost:3000/api/proxy/auth/callback/mock-oidc",
                 "http://localhost:3000/api/auth/callback",
                 "http://localhost:3001/api/v1/auth/callback",
             ],
@@ -53,7 +54,9 @@ class OIDCStore:
         }
 
         for user in [
+            {"sub": "mock-super-admin", "email": "superadmin@zapper.local", "name": "Mock Super Admin"},
             {"sub": "mock-admin", "email": "admin@zapper.local", "name": "Mock Admin"},
+            {"sub": "mock-manager", "email": "manager@zapper.local", "name": "Mock Manager"},
             {"sub": "mock-analyst", "email": "analyst@zapper.local", "name": "Mock Analyst"},
             {"sub": "mock-user", "email": "user@zapper.local", "name": "Mock User"},
         ]:
