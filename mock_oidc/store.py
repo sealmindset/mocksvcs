@@ -54,11 +54,11 @@ class OIDCStore:
         }
 
         for user in [
-            {"sub": "mock-super-admin", "email": "superadmin@zapper.local", "name": "Mock Super Admin"},
-            {"sub": "mock-admin", "email": "admin@zapper.local", "name": "Mock Admin"},
-            {"sub": "mock-manager", "email": "manager@zapper.local", "name": "Mock Manager"},
-            {"sub": "mock-analyst", "email": "analyst@zapper.local", "name": "Mock Analyst"},
-            {"sub": "mock-user", "email": "user@zapper.local", "name": "Mock User"},
+            {"sub": "mock-super-admin", "email": "ravance@gmail.com", "name": "Rob Vance (Super Admin)"},
+            {"sub": "mock-admin", "email": "rob.vance@sleepnumber.com", "name": "Rob Vance (Admin)"},
+            {"sub": "mock-manager", "email": "manager@auditgithub.local", "name": "Mock Manager"},
+            {"sub": "mock-analyst", "email": "analyst@auditgithub.local", "name": "Mock Analyst"},
+            {"sub": "mock-user", "email": "user@auditgithub.local", "name": "Mock User"},
         ]:
             self._users[user["sub"]] = {
                 **user,
@@ -120,10 +120,10 @@ class OIDCStore:
             sub = data["sub"]
             user = {
                 "sub": sub,
-                "email": data.get("email", f"{sub}@zapper.local"),
+                "email": data.get("email", f"{sub}@auditgithub.local"),
                 "name": data.get("name", sub),
                 "email_verified": data.get("email_verified", True),
-                "preferred_username": data.get("preferred_username", data.get("email", f"{sub}@zapper.local")),
+                "preferred_username": data.get("preferred_username", data.get("email", f"{sub}@auditgithub.local")),
             }
             self._users[sub] = user
             return user
@@ -149,6 +149,8 @@ class OIDCStore:
         redirect_uri: str,
         scope: str = "openid profile email",
         nonce: str = "",
+        code_challenge: str = "",
+        code_challenge_method: str = "",
     ) -> str:
         code = secrets.token_urlsafe(32)
         with self._lock:
@@ -158,6 +160,8 @@ class OIDCStore:
                 "redirect_uri": redirect_uri,
                 "scope": scope,
                 "nonce": nonce,
+                "code_challenge": code_challenge,
+                "code_challenge_method": code_challenge_method,
                 "created_at": time.time(),
             }
         return code

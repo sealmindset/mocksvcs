@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import secrets
 from typing import TYPE_CHECKING, Any
 
@@ -28,6 +30,7 @@ def create_token_router(store: OIDCStore, key_pair: KeyPair) -> APIRouter:
         client_secret: str = Form(""),
         refresh_token: str = Form(""),
         scope: str = Form(""),
+        code_verifier: str = Form(""),
     ) -> TokenResponse:
         """Exchange an authorization code or refresh token for access/ID tokens."""
         if grant_type == "authorization_code":
@@ -36,6 +39,7 @@ def create_token_router(store: OIDCStore, key_pair: KeyPair) -> APIRouter:
                 redirect_uri=redirect_uri,
                 client_id=client_id,
                 client_secret=client_secret,
+                code_verifier=code_verifier,
             )
         elif grant_type == "refresh_token":
             return _handle_refresh_token(
@@ -50,11 +54,22 @@ def create_token_router(store: OIDCStore, key_pair: KeyPair) -> APIRouter:
                 detail=f"Unsupported grant_type: {grant_type}",
             )
 
+    def _verify_pkce(code_verifier: str, code_challenge: str, method: str) -> bool:
+        """Verify PKCE code_verifier against stored code_challenge."""
+        if method == "S256":
+            digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
+            computed = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+            return computed == code_challenge
+        elif method == "plain":
+            return code_verifier == code_challenge
+        return False
+
     def _handle_auth_code(
         code: str,
         redirect_uri: str,
         client_id: str,
         client_secret: str,
+        code_verifier: str = "",
     ) -> TokenResponse:
         if not code:
             raise HTTPException(
@@ -68,6 +83,21 @@ def create_token_router(store: OIDCStore, key_pair: KeyPair) -> APIRouter:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid or expired authorization code",
             )
+
+        # Validate PKCE if code_challenge was provided during authorization
+        stored_challenge = auth_data.get("code_challenge", "")
+        stored_method = auth_data.get("code_challenge_method", "")
+        if stored_challenge:
+            if not code_verifier:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="PKCE code_verifier required but not provided",
+                )
+            if not _verify_pkce(code_verifier, stored_challenge, stored_method):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="PKCE verification failed: code_verifier does not match code_challenge",
+                )
 
         # Validate client
         if client_id and client_id != auth_data["client_id"]:

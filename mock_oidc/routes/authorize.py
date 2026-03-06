@@ -25,6 +25,8 @@ def create_authorize_router(store: OIDCStore) -> APIRouter:
         state: str = Query(""),
         nonce: str = Query(""),
         login_hint: str = Query(""),
+        code_challenge: str = Query(""),
+        code_challenge_method: str = Query(""),
     ) -> HTMLResponse | RedirectResponse:
         """OIDC Authorization Endpoint.
 
@@ -56,6 +58,8 @@ def create_authorize_router(store: OIDCStore) -> APIRouter:
                     redirect_uri=redirect_uri,
                     scope=scope,
                     nonce=nonce,
+                    code_challenge=code_challenge,
+                    code_challenge_method=code_challenge_method,
                 )
                 params = {"code": code}
                 if state:
@@ -105,6 +109,8 @@ def create_authorize_router(store: OIDCStore) -> APIRouter:
             <input type="hidden" name="scope" value="{scope}">
             <input type="hidden" name="state" value="{state}">
             <input type="hidden" name="nonce" value="{nonce}">
+            <input type="hidden" name="code_challenge" value="{code_challenge}">
+            <input type="hidden" name="code_challenge_method" value="{code_challenge_method}">
             {user_buttons}
         </form>
     </div>
@@ -144,6 +150,8 @@ def create_authorize_router(store: OIDCStore) -> APIRouter:
         scope: str = Form("openid profile email"),
         state: str = Form(""),
         nonce: str = Form(""),
+        code_challenge: str = Form(""),
+        code_challenge_method: str = Form(""),
     ) -> RedirectResponse:
         """Handle user selection from the picker form."""
         user = store.get_user(sub)
@@ -159,6 +167,8 @@ def create_authorize_router(store: OIDCStore) -> APIRouter:
             redirect_uri=redirect_uri,
             scope=scope,
             nonce=nonce,
+            code_challenge=code_challenge,
+            code_challenge_method=code_challenge_method,
         )
         params = {"code": code}
         if state:
