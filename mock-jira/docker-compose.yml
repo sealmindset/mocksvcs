@@ -1,0 +1,36 @@
+services:
+  mock-jira:
+    build: .
+    ports:
+      - "8443:8443"
+    environment:
+      PORT: 8443
+      NODE_ENV: production
+      # Data generation configuration
+      NUM_PROJECTS: ${NUM_PROJECTS:-1500}
+      NUM_INITIATIVES: ${NUM_INITIATIVES:-1500}
+      EPICS_PER_PROJECT_MIN: ${EPICS_PER_PROJECT_MIN:-200}
+      EPICS_PER_PROJECT_MAX: ${EPICS_PER_PROJECT_MAX:-250}
+      TASKS_PER_EPIC_MIN: ${TASKS_PER_EPIC_MIN:-100}
+      TASKS_PER_EPIC_MAX: ${TASKS_PER_EPIC_MAX:-150}
+      NUM_USERS: ${NUM_USERS:-500}
+      # Seed for reproducible data generation
+      DATA_SEED: ${DATA_SEED:-capacity-planner-mock-2024}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8443/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    networks:
+      - mock-jira-net
+
+networks:
+  mock-jira-net:
+    driver: bridge
