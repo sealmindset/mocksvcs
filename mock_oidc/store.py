@@ -59,6 +59,7 @@ class OIDCStore:
             {"sub": "mock-superadmin-zapper", "email": "superadmin@zapper.local", "name": "Super Admin"},
             {"sub": "mock-admin-zapper", "email": "admin@zapper.local", "name": "Mock Admin"},
             {"sub": "mock-manager", "email": "manager@auditgithub.local", "name": "Mock Manager"},
+            {"sub": "mock-manager-zapper", "email": "manager@zapper.local", "name": "Mock Manager (Zapper)"},
             {"sub": "mock-analyst", "email": "analyst@auditgithub.local", "name": "Mock Analyst"},
             {"sub": "mock-analyst-zapper", "email": "analyst@zapper.local", "name": "Mock Analyst (Zapper)"},
             {"sub": "mock-user", "email": "user@auditgithub.local", "name": "Mock User"},
