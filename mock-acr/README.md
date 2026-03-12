@@ -23,9 +23,9 @@ docker pull localhost:5100/library/python:3.12-slim
 ## How It Works
 
 1. **Mock ACR** runs locally on port 5100 and implements the Docker Registry V2 protocol
-2. **Images are loaded** via `docker push`, tar import, or the mirror script
+2. **Images are loaded** via `docker push`, tar import, mirror script, or **pulled automatically from Docker Hub** (pull-through proxy)
 3. **Dockerfiles** reference the mock registry instead of the real ACR
-4. **No Zscaler interaction** -- all pulls are local
+4. **No Zscaler interaction** -- all pulls are local or proxied through Python (which handles Zscaler's TLS inspection)
 
 ### Workflow: Replace ACR in Dockerfiles
 
@@ -37,7 +37,42 @@ FROM myacr.azurecr.io/platform/python-base:3.12
 FROM localhost:5100/platform/python-base:3.12
 ```
 
-## Loading Images
+## Pull-Through Proxy (Recommended)
+
+When an image isn't found locally, mock-acr automatically fetches it from Docker Hub and caches it for future pulls. This works **with Zscaler enabled** because the upstream fetch uses Python's `httpx` (which bypasses Zscaler's TLS interception issues that break Docker's native client).
+
+```bash
+# Just pull -- if the image isn't cached, mock-acr fetches it from Docker Hub automatically
+docker pull localhost:5100/library/busybox:latest
+
+# Second pull is instant (served from cache)
+docker pull localhost:5100/library/busybox:latest
+
+# Works with any Docker Hub image
+docker pull localhost:5100/library/python:3.12-slim
+docker pull localhost:5100/library/node:20-slim
+```
+
+The proxy handles multi-arch manifest lists automatically, resolving to your current platform (arm64 or amd64).
+
+### Proxy Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MOCK_ACR_PROXY_ENABLED` | `true` | Enable/disable pull-through proxy |
+| `MOCK_ACR_PROXY_UPSTREAM_URL` | `https://registry-1.docker.io` | Upstream registry URL |
+| `MOCK_ACR_PROXY_TLS_VERIFY` | `false` | Verify TLS certs for upstream (disable for Zscaler) |
+| `MOCK_ACR_PROXY_CA_CERT` | `` | Path to CA bundle (e.g., Zscaler root CA) for verified upstream |
+
+To disable the proxy and only serve locally-loaded images:
+
+```bash
+MOCK_ACR_PROXY_ENABLED=false docker compose up -d
+```
+
+## Loading Images (Manual)
+
+These methods are useful for pre-seeding images or loading from private registries that the proxy can't reach.
 
 ### Option 1: Mirror from Docker Hub or ACR
 
@@ -115,6 +150,11 @@ All settings via environment variables (prefix `MOCK_ACR_`):
 | `MOCK_ACR_PORT` | `5100` | Server port |
 | `MOCK_ACR_REGISTRY_HOST` | `localhost:5100` | Registry hostname (for auth challenges) |
 | `MOCK_ACR_DATA_DIR` | `/data` | Storage directory |
+| `MOCK_ACR_PROXY_ENABLED` | `true` | Enable pull-through proxy |
+| `MOCK_ACR_PROXY_UPSTREAM_URL` | `https://registry-1.docker.io` | Upstream registry |
+| `MOCK_ACR_PROXY_TLS_VERIFY` | `false` | Verify upstream TLS (set `false` for Zscaler) |
+| `MOCK_ACR_PROXY_CA_CERT` | `` | CA bundle path for verified upstream |
+| `MOCK_ACR_TOKEN_LIFETIME` | `3600` | Auth token lifetime in seconds |
 
 ## Docker Daemon Configuration
 

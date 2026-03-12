@@ -22,5 +22,18 @@ class MockACRSettings(BaseSettings):
     # Auth (mock -- always grants access)
     token_lifetime: int = 3600  # 1 hour
 
+    # Upstream proxy (pull-through cache)
+    # When enabled, if an image isn't found locally, mock-acr fetches it from
+    # the upstream registry and caches it for future pulls.
+    proxy_enabled: bool = True
+    proxy_upstream_url: str = "https://registry-1.docker.io"
+    proxy_auth_url: str = "https://auth.docker.io/token"
+    proxy_auth_service: str = "registry.docker.io"
+    # Skip TLS verification for upstream fetches (needed when Zscaler intercepts
+    # TLS and the container doesn't have the Zscaler CA cert installed)
+    proxy_tls_verify: bool = False
+    # Optional: path to a CA bundle (e.g., Zscaler root CA) for verified upstream
+    proxy_ca_cert: str = ""
+
 
 settings = MockACRSettings()

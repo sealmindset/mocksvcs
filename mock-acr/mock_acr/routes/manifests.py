@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
 
+from mock_acr.proxy import proxy_manifest
+
 if TYPE_CHECKING:
     from mock_acr.store import RegistryStore
 
@@ -34,6 +36,9 @@ def create_manifests_router(store: RegistryStore) -> APIRouter:
     @r.head("/v2/{name:path}/manifests/{reference}")
     async def head_manifest(name: str, reference: str) -> Response:
         result = store.get_manifest(name, reference)
+        # Pull-through proxy: try upstream if not found locally
+        if result is None:
+            result = await proxy_manifest(store, name, reference)
         if result is None:
             return Response(status_code=404)
         manifest_bytes, content_type = result
@@ -51,6 +56,9 @@ def create_manifests_router(store: RegistryStore) -> APIRouter:
     @r.get("/v2/{name:path}/manifests/{reference}")
     async def get_manifest(name: str, reference: str) -> Response:
         result = store.get_manifest(name, reference)
+        # Pull-through proxy: try upstream if not found locally
+        if result is None:
+            result = await proxy_manifest(store, name, reference)
         if result is None:
             return _error("MANIFEST_UNKNOWN", f"Manifest not found: {name}:{reference}")
         manifest_bytes, content_type = result

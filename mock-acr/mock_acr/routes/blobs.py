@@ -9,6 +9,7 @@ from fastapi import APIRouter, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 
 from mock_acr.config import settings
+from mock_acr.proxy import proxy_blob
 
 if TYPE_CHECKING:
     from mock_acr.store import RegistryStore
@@ -29,7 +30,10 @@ def create_blobs_router(store: RegistryStore) -> APIRouter:
     @r.head("/v2/{name:path}/blobs/{digest}")
     async def head_blob(name: str, digest: str) -> Response:
         if not store.has_blob(digest):
-            return Response(status_code=404)
+            # Pull-through proxy: try upstream
+            fetched = await proxy_blob(store, name, digest)
+            if not fetched:
+                return Response(status_code=404)
         size = store.blob_size(digest)
         return Response(
             status_code=200,
@@ -44,6 +48,11 @@ def create_blobs_router(store: RegistryStore) -> APIRouter:
     @r.get("/v2/{name:path}/blobs/{digest}")
     async def get_blob(name: str, digest: str) -> Response:
         blob_path = store.get_blob(digest)
+        if blob_path is None:
+            # Pull-through proxy: try upstream
+            fetched = await proxy_blob(store, name, digest)
+            if fetched:
+                blob_path = store.get_blob(digest)
         if blob_path is None:
             return _error("BLOB_UNKNOWN", f"Blob not found: {digest}")
         return FileResponse(
